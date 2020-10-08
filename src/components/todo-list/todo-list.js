@@ -10,11 +10,11 @@ export default class TodoList extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      todos: [{ id: 1, text: "test 1" }],
+      todos: [],
       addForm: {
         text: "",
       },
-      lastId: 1,
+      lastId: 0,
     };
   }
 
@@ -34,6 +34,7 @@ export default class TodoList extends React.Component {
     const todos = this.state.todos.slice();
     const addFormData = Object.assign({}, this.state.addForm);
     const lastId = this.state.lastId + 1;
+
     this.setState({
       todos: todos.concat([
         {
@@ -59,6 +60,7 @@ export default class TodoList extends React.Component {
     return (
       <div>
         <TodoAdd
+          todoText={this.state.addForm.text}
           onTodoTextChanged={this.onTodoTextChanged.bind(this)}
           onSubmit={this.onAddTodo.bind(this)}
         />
