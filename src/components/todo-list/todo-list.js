@@ -14,10 +14,12 @@ export default class TodoList extends React.Component {
     super(props);
     this.state = {
       todos: [],
-      addForm: {
+      formData: {
+        id: "",
         text: "",
       },
       lastId: 0,
+      isEditMode: false,
     };
   }
 
@@ -27,15 +29,15 @@ export default class TodoList extends React.Component {
         <ListItem key={todo.id}>
           <ListItemText primary={todo.text} />
           <ListItemSecondaryAction>
-          <IconButton
-              onClick={this.onEditTodo.bind(this, todo.id)}
+            <IconButton
+              onClick={this.onEditMode.bind(this, todo)}
               edge="end"
               aria-label="edit"
             >
               <EditIcon />
             </IconButton>
             <IconButton
-              onClick={this.onDeleteTodo.bind(this, todo.id)}
+              onClick={this.deleteTodo.bind(this, todo.id)}
               edge="end"
               aria-label="delete"
             >
@@ -47,32 +49,56 @@ export default class TodoList extends React.Component {
     });
   }
 
-  onAddTodo(event) {
+  onSubmit(event) {
     event.preventDefault();
 
+    if (this.state.isEditMode) this.editTodo();
+    else this.addTodo();
+  }
+
+  addTodo() {
     const todos = this.state.todos.slice();
-    const addFormData = Object.assign({}, this.state.addForm);
+    const formData = Object.assign({}, this.state.formData);
     const lastId = this.state.lastId + 1;
 
     this.setState({
       todos: todos.concat([
         {
           id: lastId,
-          text: addFormData.text,
+          text: formData.text,
         },
       ]),
       lastId,
-      addForm: {
+      formData: {
         text: "",
       },
     });
   }
 
-  onEditTodo(todoId) {
-
+  onEditMode(todo) {
+    this.setState({
+      isEditMode: true,
+      formData: {
+        id: todo.id,
+        text: todo.text,
+      },
+    });
   }
 
-  onDeleteTodo(todoId) {
+  editTodo() {
+    const formData = Object.assign({}, this.state.formData);
+    const todos = this.state.todos.slice();
+    const editedTodoIndex = todos.findIndex((t) => t.id === formData.id);
+    todos[editedTodoIndex].text = formData.text;
+
+    this.setState({
+      todos,
+      isEditMode: false,
+      formData: { id: "", text: "" },
+    });
+  }
+
+  deleteTodo(todoId) {
     const todos = this.state.todos.slice();
 
     this.setState({
@@ -82,7 +108,8 @@ export default class TodoList extends React.Component {
 
   onTodoTextChanged(e) {
     this.setState({
-      addForm: {
+      formData: {
+        id: this.state.formData.id,
         text: e.target.value,
       },
     });
@@ -94,11 +121,16 @@ export default class TodoList extends React.Component {
     return (
       <div>
         <TodoAdd
-          todoText={this.state.addForm.text}
+          todoId={this.state.formData.id}
+          todoText={this.state.formData.text}
           onTodoTextChanged={this.onTodoTextChanged.bind(this)}
-          onSubmit={this.onAddTodo.bind(this)}
+          onSubmit={this.onSubmit.bind(this)}
+          isEditMode={this.state.isEditMode}
         />
-        <List>{items}</List>
+
+        <div hidden={this.state.isEditMode}>
+          <List>{items}</List>
+        </div>
       </div>
     );
   }
